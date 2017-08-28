@@ -2,30 +2,32 @@
 #define ARM_PROTECT_H
 
 #include "Arduino.h"
+#include "Arm.h"
+#include "Serial_arm.h"
 
+#define BUZZER_PIN                37                                              //蜂鸣器引脚
+
+//注意：：所有角度的输入输出全都是以弧度制为准
+
+const double STEER_0_MIN_LIMT   = PI/9;
+const double STEER_0_MAX_LIMT   = 8*PI/9;
+const double STEER_1_MIN_LIMT   = PI/9;
+const double STEER_1_MAX_LIMT   = PI;
+const double STEER_2_MIN_LIMT   = PI/6;
+const double STEER_2_MAX_LIMT   = 8*PI/9;
 
 /*************函数详细说明请参照CPP文件*************/
 
-class arm_protect{
+class Arm_protect{
   private:
   
-  byte *Temperature;
-  byte *Electric_Current;  
-  byte *position;
-  
   public:
+      
+ boolean angle_limt_protect(double theta[], int num = 0);
   
-  double *Tempera;
-  double *Pos;
-  double *Elec;
-  
-  void Get_Temperature();
-  void Get_Electric_Current();
-  void Get_position();
-  
-  void Temperature_Protect();
-  void Electric_Current_Protect();
-  void Position_Protect();
+  boolean position_line_calculate(double theta1, double theta2);
+  void Position_Protect( double *theta, int num);
+  void warning();
 };
 
 #endif

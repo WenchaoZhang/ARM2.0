@@ -13,7 +13,9 @@
     double Serial_arm::parsedouble(HardwareSerial *desireSer)
      {
         double offset = desireSer->parseInt();
-        double offset2 = desireSer->parseInt();
+         double offset2 = 0;
+        if(desireSer -> peek() == '.')
+       offset2 = desireSer->parseInt();
         
          for(int i = 0; (i<20)&&(offset2 > 1); i++)
         {
@@ -24,8 +26,8 @@
           return offset2;
      }
      
-         int Serial_arm::parseint(HardwareSerial *desireSer)
-         {
-                 int offset = desireSer->parseInt();
-                 return offset;
-         }
+   int Serial_arm::parseint(HardwareSerial *desireSer)
+   {
+          int offset = desireSer->parseInt();
+          return offset;
+   }
