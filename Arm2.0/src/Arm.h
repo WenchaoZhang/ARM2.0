@@ -1,6 +1,8 @@
 #ifndef ARM_H
 #define ARM_H
 
+#define START_PROTECT
+
 #include <Arduino.h>
 #include <Serial_arm.h>
 #include <HardwareSerial.h>
@@ -8,6 +10,7 @@
 #include <EEPROM.h>
 #include <PVector.h>
 #include <TimerOne.h>
+#include "Arm_protect.h"
 
 #define USB_SER                     &Serial                                            //USB串口设置
 
@@ -29,6 +32,7 @@ private:
     short Rad2Pos(double rad);
     short Angle2Pos(double angle);
     double Pos2Angle(double pos);
+    double Angle2Rad(double angle);
   
 public:
     word clc_Times_Total;                                                              //舵机从当前位置到达目标位置的总耗时
@@ -56,8 +60,12 @@ public:
     void Set_Arm_Torque_On(void);
     void Set_Arm_Torque_Off(void);
     
+    boolean turn_steer_345_to_positon(word pos3 , word pos4, word pos5 , word runtime);
+    boolean turn_steer_345_to_positon(double angle3 , double angle4, double angle5 , word runtime);
+    
     void Get_Offset();
     double Rad2Angle(double rad);
+    double Pos2Rad(word pos);
 };
 
 extern Arm MyArm;

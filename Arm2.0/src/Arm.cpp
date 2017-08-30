@@ -124,6 +124,15 @@ void Arm::move_to_position( double x_ , double y_, double z_ , word runtime)
 {    
     inverse_movement(x_ , y_, z_);
     
+    #ifdef START_PROTECT
+        double thet[3];
+        thet[0] = theta[0];
+        thet[1] = theta[1];
+        thet[2] = theta[2];
+        boolean judge = MyArm_Protect.Position_Protect(thet, sizeof(thet)/sizeof(thet[0]));
+        if(judge == false){ Serial.print("out of angle limit"); return false;}
+    #endif
+
     for(byte i = 0 ; i < 3; i++)   
     {
       pos_goal[i] = Rad2Pos(theta[i]) + offPos[i];
@@ -146,7 +155,16 @@ void Arm::move_to_position( double x_ , double y_, double z_ , word runtime)
 void Arm::move_to_position( PVector pt , word runtime)
 {    
     inverse_movement(pt);
-     
+    
+    #ifdef START_PROTECT
+        double thet[3];
+        thet[0] = theta[0];
+        thet[1] = theta[1];
+        thet[2] = theta[2];
+        boolean judge = MyArm_Protect.Position_Protect(thet, sizeof(thet)/sizeof(thet[0]));
+        if(judge == false){ Serial.print("out of angle limit"); return false;}
+    #endif
+
     for(byte i = 0 ; i < 3; i++)   
     {
       pos_goal[i] = Rad2Pos(theta[i]) + offPos[i];
@@ -160,7 +178,7 @@ void Arm::move_to_position( PVector pt , word runtime)
  * @code                        示例     使三个舵机运行到中间位置
  *      				                       MyArm.move_to_position(2047, 2047, 2047, 2000);
  * @endcode
- * @param[in]                  pos0             舵机0的位置，范围（0~4095），表示（0~360°）
+ * @param[in]                  pos0             舵机0的位置，范围（0~4095），表示（0~360°）注意：：如果开启保护，以保护中的位限为主
  * @param[in]                  pos1             舵机1的位置，范围（0~4095），表示（0~360°）
  * @param[in]                  pos2             舵机2的位置，范围（0~4095），表示（0~360°）
  * @param[in]                  runtime         机械臂由当前位置运行到指定位置所花的时间，单位是毫秒
@@ -168,6 +186,15 @@ void Arm::move_to_position( PVector pt , word runtime)
  */
 void Arm::move_to_position( word pos0 , word pos1, word pos2 , word runtime)
 {
+    #ifdef START_PROTECT
+        double thet[3];
+        thet[0] = Pos2Rad(pos0);
+        thet[1] = Pos2Rad(pos1);
+        thet[2] = Pos2Rad(pos2);
+        boolean judge = MyArm_Protect.Position_Protect(thet, sizeof(thet)/sizeof(thet[0]));
+        if(judge == false){ Serial.print("out of angle limit"); return false;}
+    #endif
+    
       steer[0] ->Set_Steer_position_runtime(pos0 + offPos[0] , runtime);
       steer[1] ->Set_Steer_position_runtime(pos1 +  offPos[1], runtime);
       steer[2] ->Set_Steer_position_runtime(pos2 +  offPos[2], runtime);
@@ -251,6 +278,62 @@ void Arm::Set_Arm_Torque_Off(void)
   }
 }
 
+ /**
+ * @brief   		                   重要：舵机345的状态设置函数
+ * @note                         前面的机械臂的位置函数主要是用于确定舵机的末端位置，这个函数中、的作用是使舵机345运动，旋转末端机构
+ * @code                        示例     使3，4，5三个舵机运行到中间位置，运动时间为两秒
+ *      				                       MyArm.turn_steer_345_to_positon(2047, 2047, 2047, 2000);
+ * @endcode
+ * @param[in]                  pos3             舵机3的位置，范围（0~4095），表示（0~360°）注意：：如果开启保护，以保护中的位限为主
+ * @param[in]                  pos4             舵机4的位置，范围（0~4095），表示（0~360°）
+ * @param[in]                  pos5             舵机5的位置，范围（0~4095），表示（0~360°）
+ * @param[in]                  runtime         机械臂由当前位置运行到指定位置所花的时间，单位是毫秒
+ * @return                       boolean         角度超出限制返回false        
+ */
+boolean Arm::turn_steer_345_to_positon(word pos3 , word pos4, word pos5 , word runtime)
+{
+      #ifdef START_PROTECT
+        double thet[3];
+        thet[0] = Pos2Rad(pos3);
+        thet[1] = Pos2Rad(pos4);
+        thet[2] = Pos2Rad(pos5);
+        boolean judge = MyArm_Protect.steer_345_angle_protect(thet, sizeof(thet)/sizeof(thet[0]));
+        if(judge == false){ Serial.print("out of angle limit"); return false;}
+      #endif
+
+      steer[3] ->Set_Steer_position_runtime(pos3 + offPos[3] , runtime);
+      steer[4] ->Set_Steer_position_runtime(pos4 +  offPos[4], runtime);
+      steer[5] ->Set_Steer_position_runtime(pos5 +  offPos[5], runtime);
+}
+
+ /**
+ * @brief   		                   重要：舵机345的状态设置重载函数
+ * @note                         前面的机械臂的位置函数主要是用于确定舵机的末端位置，这个函数中、的作用是使舵机345运动，旋转末端机构
+ * @code                        示例     使3，4，5三个舵机运行到中间位置，运动时间为两秒
+ *      				                       MyArm.turn_steer_345_to_positon(90, 90, 90, 2000);
+ * @endcode
+ * @param[in]                  angle3             舵机3的角度，范围（0~360） 注意：：如果开启保护，以保护中的位限为主
+ * @param[in]                  angle4             舵机4的角度，范围（0~360） 
+ * @param[in]                  angle5             舵机5的角度，范围（0~360） 
+ * @param[in]                  runtime           机械臂由当前位置运行到指定位置所花的时间，单位是毫秒
+ * @return                       boolean           保护超出限度返回false       
+ */
+boolean Arm::turn_steer_345_to_positon(double angle3 , double angle4, double angle5 , word runtime)
+{
+      #ifdef START_PROTECT
+        double thet[3];
+        thet[0] = Angle2Rad(angle3);
+        thet[1] = Angle2Rad(angle4);
+        thet[2] = Angle2Rad(angle5);
+        boolean judge = MyArm_Protect.steer_345_angle_protect(thet, sizeof(thet)/sizeof(thet[0]));
+        if(judge == false){ Serial.print("out of angle limit"); return false;}
+      #endif
+      steer[3] ->Set_Steer_position_runtime(Angle2Pos(angle3) +  offPos[3] , runtime);
+      steer[4] ->Set_Steer_position_runtime(Angle2Pos(angle4) +  offPos[4], runtime);
+      steer[5] ->Set_Steer_position_runtime(Angle2Pos(angle5) +  offPos[5], runtime);
+}
+
+
   /**
  * @brief   		                  得到机械臂的偏置
  * @code                        示例     
@@ -271,7 +354,7 @@ void Arm::Get_Offset()
  * @code                        示例     设置ID为1的舵机的偏置为100
  *      				                       MyArm.offset_by_pos(1， 100);
  * @endcode
- * @param[in]                  id             舵机的ID号
+ * @param[in]                  id              舵机的ID号
  * @param[in]                  offset        设置舵机的偏置，值的范围（-2046 ~ +2046）
  * @return                       void        
  */
@@ -353,7 +436,7 @@ short Arm::Angle2Pos(double angle)
  */
 double Arm::Pos2Angle(double pos)
 {
-    return short(mapFloat(pos, 1024, 3071, 0, 180));
+    return double(mapFloat(pos, 1024, 3071, 0, 180));
 }
 
 /**
@@ -366,8 +449,33 @@ double Arm::Pos2Angle(double pos)
  */
 double Arm::Rad2Angle(double rad)
 {
-    return short(mapFloat(rad, 0, PI, 0, 180));
+    return double(mapFloat(rad, 0, PI, 0, 180));
 }
 
+/**
+ * @brief   		                  角度值转弧度值   
+ * @code                        示例  
+ *      		                          MyArm.Angle2Rad( 98 );		                        
+ * @endcode
+ * @param[in]                 angle                 角度数据
+ * @return                                               返回值：弧度数据
+ */
+double Arm::Angle2Rad(double angle)
+{
+    return double(mapFloat(angle, 0, 180, 0, PI));
+}
+
+/**
+ * @brief   		                  弧度值转角度值   
+ * @code                        示例  
+ *      		                          MyArm.Rad2Angle( 2.12 );		                        
+ * @endcode
+ * @param[in]                 rad                    弧度数据
+ * @return                                               返回值：角度数据
+ */
+double Arm::Pos2Rad(word pos)
+{
+   return double(mapFloat(pos, 1024, 3071, 0, PI));
+}
 
 //利用速度去做整体调整

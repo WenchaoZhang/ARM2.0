@@ -120,19 +120,20 @@ void Arm_learn::reappear_learn()
   
   if((start_learn_flag == false) && (record_flag == true))
   {  
-    word tmpe_pos[3] = {0};
+    word tmpe_pos[7] = {0};
 
    // MyArm.Set_Arm_Torque_On();
     EEPROM.get(rom_offset + 1*sizeof(word), record_point_num);
     Serial.print("record_point_num:   ");Serial.println(record_point_num);
     for(int i = 1; i <= record_point_num; i++)
     {
-      for(int j = 0; j < 3; j++)
+      for(int j = 0; j < 7; j++)
       {
           EEPROM.get(rom_offset + 2*sizeof(word) + i*7*sizeof(word) + j*sizeof(word), tmpe_pos[j]);
           Serial.println(tmpe_pos[j]);
       }
           MyArm.move_to_position(  tmpe_pos[0] ,  tmpe_pos[1],  tmpe_pos[2] ,  RUN_TIME);
+          MyArm.turn_steer_345_to_positon(tmpe_pos[3] ,  tmpe_pos[4],  tmpe_pos[5] ,  RUN_TIME);
           delay(RUN_TIME);
     }
   }
